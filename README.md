@@ -85,8 +85,11 @@ Le jeu se déroule par **tours**, chaque tour comprenant plusieurs étapes :
 
 ## Equipe
 20231925 NARAYANASSAMYCHETTIAR VISWADEVI
+
 20245194 MEZEGHRANE ZINEDDINE
+
 20233004 PLUVINET-VIAENE ARMAND
+
 20230692 NGUARA NGOMA MARC
 
 
