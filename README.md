@@ -83,7 +83,7 @@ Le jeu se déroule par **tours**, chaque tour comprenant plusieurs étapes :
    La partie se termine lorsque la base du Défenseur atteint 0 PV (victoire de l’Attaquant) ou lorsque l’Attaquant n’a plus assez de ressources pour lancer une nouvelle vague (victoire du Défenseur). Le score est donc affiché.
 
 
-## Equipe
+## Équipe
 20231925 NARAYANASSAMYCHETTIAR VISWADEVI
 
 20245194 MEZEGHRANE ZINEDDINE
