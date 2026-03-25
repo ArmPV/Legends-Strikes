@@ -6,3 +6,4 @@ class Effect:
     intensity: float
     isActive: bool
     source: str
+    pass 

@@ -1,6 +1,11 @@
 import pygame
 import sys
 
+from game.path import Path
+from game.wave import Wave
+from game.creatures import Creature
+from game.utils import Point
+
 # Initialisation de Pygame
 pygame.init()
 
@@ -22,6 +27,8 @@ BLEU_SURVOL = (70, 130, 230)
 police = pygame.font.Font(None, 50)
 police_titre = pygame.font.Font(None, 80)
 
+TAILLE_CASE = 40
+
 
 # Classe Bouton
 class Bouton:
@@ -33,14 +40,9 @@ class Bouton:
         self.est_survole = False
     
     def dessiner(self, surface):
-        # Change la couleur si la souris survole
         couleur = self.couleur_survol if self.est_survole else self.couleur
-        
-        # Dessine le bouton
         pygame.draw.rect(surface, couleur, self.rect, border_radius=10)
         pygame.draw.rect(surface, BLANC, self.rect, 3, border_radius=10)
-        
-        # Dessine le texte
         texte_surface = police.render(self.texte, True, BLANC)
         texte_rect = texte_surface.get_rect(center=self.rect.center)
         surface.blit(texte_surface, texte_rect)
@@ -52,9 +54,8 @@ class Bouton:
         return self.rect.collidepoint(pos) and clic
 
 
-# Fonction pour afficher le plateau
+# Fonction pour afficher le plateau (grille)
 def afficher_plateau(surface, lignes=15, colonnes=20, taille_case=40):
-    # Dessine une grille simple
     for y in range(lignes):
         for x in range(colonnes):
             rect = pygame.Rect(x * taille_case, y * taille_case, taille_case, taille_case)
@@ -63,22 +64,17 @@ def afficher_plateau(surface, lignes=15, colonnes=20, taille_case=40):
 
 # Fonction pour afficher la fenêtre de confirmation
 def afficher_confirmation(surface):
-    # Fond sombre transparent
     overlay = pygame.Surface((LARGEUR, HAUTEUR))
     overlay.set_alpha(180)
     overlay.fill(NOIR)
     surface.blit(overlay, (0, 0))
 
-    # Boîte de dialogue
-    # (x=150, y=200, largeur=550, hauteur=200)
     pygame.draw.rect(surface, GRIS, (150, 200, 500, 200), border_radius=15)
     pygame.draw.rect(surface, BLANC, (150, 200, 500, 200), 3, border_radius=15)
 
-    # Texte
     texte = police.render("Êtes-vous sûr de quitter ?", True, BLANC)
-    surface.blit(texte, (LARGEUR//2 - texte.get_width()//2, 230))
+    surface.blit(texte, (LARGEUR // 2 - texte.get_width() // 2, 230))
 
-    # Boutons Oui / Non
     bouton_oui.dessiner(surface)
     bouton_non.dessiner(surface)
 
@@ -107,13 +103,27 @@ en_cours = True
 afficher_menu = True
 confirmation_quitter = False
 
+# === SEMAINE 9 : CHEMIN + VAGUE ===
+
+# 1) Créer le chemin
+chemin = Path.chemin_simple()
+
+# 2) Créer une vague
+vague = Wave(delay=15)
+vague.add_creature(Creature(30, 1.0, 5, Point(0, 0), 30, color=(255, 0, 0)))   # Rouge
+vague.add_creature(Creature(50, 1.0, 8, Point(0, 0), 50, color=(0, 0, 255)))   # Bleu
+vague.add_creature(Creature(20, 1.0, 3, Point(0, 0), 20, color=(255, 255, 0))) # Jaune
+
+
+# 3) Assigner le chemin aux créatures
+vague.set_path(chemin)
+
 
 # Boucle principale
 while en_cours:
     pos_souris = pygame.mouse.get_pos()
     clic = False
     
-    # Gestion des événements
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             en_cours = False
@@ -135,7 +145,6 @@ while en_cours:
         pygame.display.flip()
         clock.tick(60)
         continue
-
 
     # MENU PRINCIPAL
     if afficher_menu:
@@ -160,7 +169,30 @@ while en_cours:
     # PLATEAU
     else:
         ecran.fill(NOIR)
-        afficher_plateau(ecran)
+        afficher_plateau(ecran, lignes=15, colonnes=20, taille_case=TAILLE_CASE)
+
+        # === SEMAINE 9 : mise à jour de la vague ===
+        vague.update()
+
+        # Dessiner le chemin
+        for wp in chemin.waypoints:
+            rect = pygame.Rect(
+                wp.x * TAILLE_CASE,
+                wp.y * TAILLE_CASE,
+                TAILLE_CASE,
+                TAILLE_CASE
+            )
+            pygame.draw.rect(ecran, (150, 100, 50), rect)
+
+        # Dessiner les créatures actives
+        for c in vague.active:
+            pygame.draw.circle(
+                ecran,
+                c.color,
+                (int(c.position.x * TAILLE_CASE + TAILLE_CASE / 2),
+                 int(c.position.y * TAILLE_CASE + TAILLE_CASE / 2)),
+                TAILLE_CASE // 3
+            )
 
         # Bouton quitter sur le plateau
         bouton_quitter_plateau.verifier_survol(pos_souris)
