@@ -5,6 +5,7 @@ from game.path import Path
 from game.wave import Wave
 from game.creatures import Creature
 from game.utils import Point
+from game.towers import Tower   # <-- Correct
 
 # Initialisation de Pygame
 pygame.init()
@@ -103,19 +104,19 @@ en_cours = True
 afficher_menu = True
 confirmation_quitter = False
 
+# === TOURS ===
+towers = []
+gold = 200
+
 # === SEMAINE 9 : CHEMIN + VAGUE ===
 
-# 1) Créer le chemin
 chemin = Path.chemin_simple()
 
-# 2) Créer une vague
 vague = Wave(delay=15)
-vague.add_creature(Creature(30, 1.0, 5, Point(0, 0), 30, color=(255, 0, 0)))   # Rouge
-vague.add_creature(Creature(50, 1.0, 8, Point(0, 0), 50, color=(0, 0, 255)))   # Bleu
-vague.add_creature(Creature(20, 1.0, 3, Point(0, 0), 20, color=(255, 255, 0))) # Jaune
+vague.add_creature(Creature(30, 1.0, 5, Point(0, 0), 30, color=(255, 0, 0)))
+vague.add_creature(Creature(50, 1.0, 8, Point(0, 0), 50, color=(0, 0, 255)))
+vague.add_creature(Creature(20, 1.0, 3, Point(0, 0), 20, color=(255, 255, 0)))
 
-
-# 3) Assigner le chemin aux créatures
 vague.set_path(chemin)
 
 
@@ -166,12 +167,12 @@ while en_cours:
         for bouton in boutons_menu:
             bouton.dessiner(ecran)
 
-    # PLATEAU
+    # === PLATEAU ===
     else:
         ecran.fill(NOIR)
         afficher_plateau(ecran, lignes=15, colonnes=20, taille_case=TAILLE_CASE)
 
-        # === SEMAINE 9 : mise à jour de la vague ===
+        # Mise à jour de la vague
         vague.update()
 
         # Dessiner le chemin
@@ -184,7 +185,40 @@ while en_cours:
             )
             pygame.draw.rect(ecran, (150, 100, 50), rect)
 
-        # Dessiner les créatures actives
+        # === PLACEMENT DES TOURS ===
+        if clic:
+            x_case = pos_souris[0] // TAILLE_CASE
+            y_case = pos_souris[1] // TAILLE_CASE
+
+            if y_case != 7:  # pas sur le chemin
+                nouvelle_tour = Tower(
+                    damage=10,
+                    range=3,
+                    level=1,
+                    cost=50,
+                    position=Point(x_case, y_case)
+                )
+
+                if gold >= nouvelle_tour.cost:
+                    gold -= nouvelle_tour.cost
+                    towers.append(nouvelle_tour)
+
+        # === ATTAQUE DES TOURS ===
+        for t in towers:
+            t.attack(vague.active)
+
+        # === AFFICHAGE DES TOURS ===
+        for t in towers:
+            pygame.draw.rect(
+                ecran,
+                (0, 0, 255),
+                (t.position.x * TAILLE_CASE,
+                 t.position.y * TAILLE_CASE,
+                 TAILLE_CASE,
+                 TAILLE_CASE)
+            )
+
+        # === AFFICHAGE DES CRÉATURES ===
         for c in vague.active:
             pygame.draw.circle(
                 ecran,
@@ -194,7 +228,7 @@ while en_cours:
                 TAILLE_CASE // 3
             )
 
-        # Bouton quitter sur le plateau
+        # Bouton quitter
         bouton_quitter_plateau.verifier_survol(pos_souris)
         bouton_quitter_plateau.dessiner(ecran)
 
