@@ -18,6 +18,8 @@ Architecture du jeu :
 """
 import random
 import pygame
+import math
+from phases import AmeliorationsJoueur
 
 
 # ══════════════════════════════════════════════════════════════════════════
@@ -26,35 +28,58 @@ import pygame
 
 # Taille de la fenêtre Pygame quand on affiche le plateau de jeu
 # (différente de la fenêtre du menu qui fait 800×600)
-LARGEUR_FENETRE = 1000   # largeur en pixels
-HAUTEUR_FENETRE = 700    # hauteur en pixels
+LARGEUR_FENETRE = 1280   # largeur en pixels
+HAUTEUR_FENETRE = 720    # hauteur en pixels
 
 # Dimensions de la grille de jeu
 COLS = 20                # nombre de colonnes  (axe horizontal)
 LIGNES = 14              # nombre de lignes    (axe vertical)
 TAILLE_CASE = 40         # taille d'une case en pixels (carré 40×40)
 
-# Marges calculées automatiquement pour centrer la grille dans la fenêtre
-# Exemple : (1000 - 20*40) / 2 = 100 pixels de marge de chaque côté
-MARGE_X = (LARGEUR_FENETRE - COLS * TAILLE_CASE) // 2
+# Marges du plateau
+# La grille est volontairement alignée à gauche pour libérer un panneau UI à droite.
+MARGE_X = 20
 MARGE_Y = (HAUTEUR_FENETRE - LIGNES * TAILLE_CASE) // 2
 
 # ── Couleurs (tuples RGB) ──────────────────────────────────────────────
 # Utilisées partout dans l'affichage Pygame pour dessiner les cases,
 # le texte, les symboles de bases, etc.
 BLANC       = (255, 255, 255)
-NOIR        = (0, 0, 0)
-GRIS        = (40, 40, 40)       # bordures des cases
-GRIS_CASE   = (30, 30, 30)       # fond des cases vides (inutilisé maintenant)
-VERT        = (34, 180, 34)
-VERT_CLAIR  = (100, 200, 100)
-ROUGE       = (200, 50, 50)      # base attaquant + texte attaquant
-BLEU        = (50, 100, 200)     # base défenseur
-BLEU_CLAIR  = (100, 160, 255)    # texte défenseur dans le HUD
-JAUNE       = (240, 200, 50)     # ligne du chemin + numéro de tour
-ORANGE      = (230, 130, 30)
-MARRON      = (100, 70, 40)      # couleur des cases du chemin
-VIOLET      = (130, 60, 180)
+NOIR        = (8, 12, 25)            # Fond noir profond (cyberpunk)
+GRIS_SOMBRE = (20, 28, 40)           # Gris-bleu sombre
+GRIS_MOYEN  = (45, 55, 75)           # Gris-bleu moyen
+GRIS        = (35, 40, 50)           # bordures des cases
+GRIS_CASE   = (20, 25, 35)           # fond des cases vides (inutilisé maintenant)
+VERT        = (50, 220, 100)
+VERT_CLAIR  = (100, 255, 150)
+
+# Zone de placement - Vert néon cyberpunk
+ZONE_VERT     = (0, 220, 150)        # Cyan néon vif
+ZONE_VERT_2   = (50, 240, 180)       # Cyan néon clair
+ZONE_VERT_D   = (20, 100, 80)        # Cyan néon sombre
+
+# Chemin - Jaune classique (ancien style)
+CHEMIN_OR     = (255, 210, 80)       # Jaune du chemin (couleur d'avant)
+CHEMIN_OMBRE  = (200, 150, 40)       # Ombre du chemin
+CHEMIN_HAUT   = (255, 230, 120)      # Subrillance du chemin
+
+# Base attaquant - Rouge-Rose vif
+ROUGE         = (255, 70, 100)       # Rouge-rose principal
+ROUGE_FONCE   = (200, 40, 70)        # Rouge-rose sombre
+ROUGE_CLAIR   = (255, 150, 160)      # Rouge-rose clair
+
+# Base défenseur - Bleu Cyan cyberpunk
+BLEU          = (70, 200, 255)       # Bleu cyan principal
+BLEU_FONCE    = (40, 120, 180)       # Bleu cyan sombre
+BLEU_CLAIR    = (150, 230, 255)      # Bleu cyan clair / texte défenseur dans le HUD
+
+# Accents
+JAUNE       = (255, 210, 80)         # ligne du chemin + numéro de tour
+ORANGE      = (255, 150, 50)
+OR_ACCENT   = (255, 200, 60)         # Accents or
+MARRON      = (140, 100, 60)         # couleur des cases du chemin
+MARRON_CLAIR = (180, 130, 80)
+VIOLET      = (180, 100, 255)
 
 # ── Types de case ──────────────────────────────────────────────────────
 # Chaque case de la grille a un type parmi ceux-ci.
@@ -216,12 +241,32 @@ class Joueur:
         role (str)            : "attaquant" ou "defenseur"
         or_disponible (int)   : or restant pour acheter des unités/tours
         unites (list[Unite])  : liste de toutes les unités du joueur en jeu
+        interet (float)       : taux d'intérêt gagnant par tour (0.05 = 5% par tour)
+        ameliorations         : objet AmeliorationsJoueur pour gérer les upgrades
     """
     def __init__(self, nom, role, or_initial=100):
         self.nom = nom
         self.role = role              # "attaquant" ou "defenseur"
         self.or_disponible = or_initial
         self.unites = []              # unités achetées et placées/envoyées
+        
+        # Intérêt - justifie de ne pas tout dépenser immédiatement
+        self.interet = 0.05  # 5% par tour (peut être amélioré)
+        self.gains_interet_tour = 0  # accumule les gains d'intérêt
+        
+        # Améliorations pour ce joueur
+        self.ameliorations = AmeliorationsJoueur(role)
+    
+    def calculer_interet(self):
+        """Calcule et ajoute les gains d'intérêt au joueur."""
+        gain = int(self.or_disponible * self.interet)
+        self.gains_interet_tour = gain
+        self.or_disponible += gain
+        return gain
+    
+    def augmenter_interet(self, bonus):
+        """Augmente le taux d'intérêt (pour les améliorations)."""
+        self.interet += bonus
 
     def ajouter_unite(self, unite):
         """
@@ -585,136 +630,235 @@ class Plateau:
 # Dictionnaire qui associe chaque type de case à sa couleur d'affichage
 # Utilisé par dessiner_plateau() pour colorier la grille
 COULEURS_CASE = {
-    VIDE:       GRIS_CASE,       # case vide (ne devrait pas apparaître)
-    CHEMIN:     MARRON,          # chemin que les attaquants suivent
-    BASE_ATK:   ROUGE,           # base attaquant (point de spawn)
-    BASE_DEF:   BLEU,            # base défenseur (à protéger)
-    ZONE_PLACE: (25, 50, 25),    # zone de placement (vert foncé)
+    VIDE:       (15, 20, 35),          # case vide (ne devrait pas apparaître)
+    CHEMIN:     CHEMIN_OR,             # chemin que les attaquants suivent
+    BASE_ATK:   ROUGE,                 # base attaquant (point de spawn)
+    BASE_DEF:   BLEU,                  # base défenseur (à protéger)
+    ZONE_PLACE: ZONE_VERT_D,           # zone de placement (vert cyberpunk sombre)
 }
 
 
-def dessiner_plateau(surface, plateau, police_info=None):
-    """
-    Dessine le plateau de jeu complet sur la surface Pygame.
+def dessiner_case_moderne(surface, px, py, type_case, taille=40):
+    """Dessine une case avec rendu moderne 3D avec dégradés et ombres.
+    Les cases du chemin sont dessinées sans bordures mais avec texture pour une apparence continue mais riche."""
     
-    Dessine dans l'ordre :
-      1. Le fond noir
-      2. Chaque case de la grille (colorée selon son type)
-      3. La ligne jaune du chemin (pour bien visualiser le parcours)
-      4. Des points directionnels sur le chemin (indiquent le sens)
-      5. Les symboles des bases (▶ pour ATK, ✚ pour DEF)
-      6. La légende en bas de l'écran
-      7. Le titre en haut
+    couleur_base = COULEURS_CASE.get(type_case, GRIS_SOMBRE)
+    rect = pygame.Rect(px, py, taille, taille)
     
-    Args:
-        surface (pygame.Surface) : surface sur laquelle dessiner (l'écran)
-        plateau (Plateau)        : instance du plateau de jeu
-        police_info (Font, opt)  : police pour la légende (créée si None)
-    """
-    # 1) Fond noir
-    surface.fill(NOIR)
+    # Ombre portée
+    shadow_color = (0, 0, 0)
+    shadow_rect = pygame.Rect(px + 2, py + 2, taille - 1, taille - 1)
+    pygame.draw.rect(surface, shadow_color, shadow_rect)
+    
+    # Case principale
+    pygame.draw.rect(surface, couleur_base, rect)
+    
+    # Effets visuels
+    if type_case == CHEMIN:
+        # Ombre légère en haut-gauche et relief en bas-droit pour le chemin
+        pygame.draw.line(surface, (200, 160, 60), (px + 2, py + 2), (px + taille - 3, py + 2), 1)
+        pygame.draw.line(surface, (200, 160, 60), (px + 2, py + 2), (px + 2, py + taille - 3), 1)
+        pygame.draw.line(surface, (180, 120, 20), (px + taille - 3, py + 2), (px + taille - 3, py + taille - 3), 1)
+        pygame.draw.line(surface, (180, 120, 20), (px + 2, py + taille - 3), (px + taille - 3, py + taille - 3), 1)
+    else:
+        # Bordure externe sombre
+        pygame.draw.rect(surface, GRIS_MOYEN, rect, 2)
+        
+        # Bordure interne brillante (effet 3D)
+        if type_case == ZONE_PLACE:
+            pygame.draw.line(surface, ZONE_VERT_2, (px + 2, py + 2), (px + taille - 3, py + 2), 1)
+            pygame.draw.line(surface, ZONE_VERT_2, (px + 2, py + 2), (px + 2, py + taille - 3), 1)
+        elif type_case == BASE_ATK:
+            pygame.draw.line(surface, ROUGE_CLAIR, (px + 2, py + 2), (px + taille - 3, py + 2), 1)
+        elif type_case == BASE_DEF:
+            pygame.draw.line(surface, BLEU_CLAIR, (px + 2, py + 2), (px + taille - 3, py + 2), 1)
 
-    # ── 2) Dessiner chaque case de la grille ────────────────────────
-    # On parcourt toutes les cases et on dessine un rectangle coloré
+
+def dessiner_plateau(surface, plateau, police_info=None, afficher_zones=True):
+    """Dessine le plateau avec style moderne cyberpunk/gaming."""
+    
+    # Fond noir profond
+    surface.fill(NOIR)
+    
+    # Motif de grille subtile en arrière-plan (cyberpunk) avec dégradé de couleur
+    # Gradient vertical de bleu sombre à noir profond
+    for y in range(0, HAUTEUR_FENETRE, 20):
+        # Créer un gradient bleu→noir
+        ratio = y / HAUTEUR_FENETRE
+        couleur_gradient = (
+            int(20 * (1 - ratio) + 8 * ratio),
+            int(28 * (1 - ratio) + 12 * ratio),
+            int(50 * (1 - ratio) + 25 * ratio)
+        )
+        pygame.draw.line(surface, couleur_gradient, (0, y), (LARGEUR_FENETRE, y), 1)
+    
+    # Motif vertical pour la grille
+    for x in range(0, LARGEUR_FENETRE, 20):
+        pygame.draw.line(surface, (12, 16, 32), (x, 0), (x, HAUTEUR_FENETRE), 1)
+    
+    # Ajouter une teinte légère de couleur au fond de la zone du jeu
+    # Créer un rectangle semi-transparent avec une teinte bleuâtre
+    fond_rect = pygame.Surface((LARGEUR_FENETRE, HAUTEUR_FENETRE))
+    fond_rect.set_alpha(20)
+    fond_rect.fill((20, 40, 80))  # Teinte bleu-foncé subtile
+    surface.blit(fond_rect, (0, 0))
+
+    # Cases modernes
     for ligne in range(LIGNES):
         for col in range(COLS):
             type_case = plateau.grille[ligne][col]
-            couleur = COULEURS_CASE.get(type_case, GRIS_CASE)
+            if not afficher_zones and type_case == ZONE_PLACE:
+                type_case = VIDE
             px, py = plateau.case_vers_pixel(col, ligne)
-            rect = pygame.Rect(px, py, TAILLE_CASE, TAILLE_CASE)
-            pygame.draw.rect(surface, couleur, rect)       # case remplie
-            pygame.draw.rect(surface, GRIS, rect, 1)       # bordure fine
+            dessiner_case_moderne(surface, px, py, type_case, TAILLE_CASE)
 
-    # ── 3) Tracer la ligne jaune du chemin ──────────────────────────
-    # On relie les centres de chaque case du chemin par une ligne continue
-    # Cela aide à visualiser le parcours des attaquants
-    if len(plateau.chemin) >= 2:
-        points = [plateau.case_vers_centre(c, l) for (c, l) in plateau.chemin]
-        pygame.draw.lines(surface, JAUNE, False, points, 3)  # épaisseur 3px
+    # Chemin avec glow - CACHÉ (pas affiché)
+    # La ligne du chemin est masquée pour garder une esthétique propre
+    # if len(plateau.chemin) >= 2:
+    #     # Tracer segment par segment, en remplissant les cases adjacentes
+    #     for i in range(len(plateau.chemin) - 1):
+    #         ... code masqué ...
 
-    # ── 4) Points directionnels sur le chemin ───────────────────────
-    # Petits cercles jaunes tous les 3 cases pour indiquer le sens de marche
-    for i in range(0, len(plateau.chemin) - 1, 3):
-        cx, cy = plateau.case_vers_centre(*plateau.chemin[i])
-        nx, ny = plateau.case_vers_centre(*plateau.chemin[i + 1])
-        dx = nx - cx
-        dy = ny - cy
-        mid_x = cx + dx // 2  # point au milieu entre 2 cases
-        mid_y = cy + dy // 2
-        pygame.draw.circle(surface, JAUNE, (mid_x, mid_y), 3)
+    # Flèches directionnelles - MASQUÉES
+    # for i in range(0, len(plateau.chemin) - 1, 3):
+    #     cx, cy = plateau.case_vers_centre(*plateau.chemin[i])
+    #     nx, ny = plateau.case_vers_centre(*plateau.chemin[i + 1])
+    #     dx = (nx - cx) // 2
+    #     dy = (ny - cy) // 2
+    #     
+    #     pygame.draw.circle(surface, CHEMIN_OR, (cx + dx, cy + dy), 5)
+    #     pygame.draw.circle(surface, (255, 255, 100), (cx + dx, cy + dy), 7, 1)
 
-    # ── 5) Symboles des bases ───────────────────────────────────────
-    # Base attaquant : triangle blanc (▶) = direction d'attaque
+    # Base attaquant - Carré rouge avec glow
     bx, by = plateau.case_vers_centre(*plateau.base_attaquant)
-    pygame.draw.polygon(surface, BLANC, [
-        (bx - 10, by - 10), (bx + 12, by), (bx - 10, by + 10)
-    ])
-    # Base défenseur : croix dans un carré (bouclier/forteresse)
+    # Glow progressif
+    pygame.draw.circle(surface, (150, 30, 60), (bx, by), 25)
+    pygame.draw.circle(surface, (200, 40, 80), (bx, by), 20)
+    # Carré principal
+    rect_atk = pygame.Rect(bx - 15, by - 15, 30, 30)
+    pygame.draw.rect(surface, ROUGE, rect_atk)
+    pygame.draw.rect(surface, ROUGE_CLAIR, rect_atk, 2)
+
+    # Base défenseur - Carré bleu avec glow
     dx, dy = plateau.case_vers_centre(*plateau.base_defenseur)
-    pygame.draw.rect(surface, BLANC, (dx - 10, dy - 10, 20, 20), 3)  # carré
-    pygame.draw.line(surface, BLANC, (dx - 6, dy), (dx + 6, dy), 2)  # croix H
-    pygame.draw.line(surface, BLANC, (dx, dy - 6), (dx, dy + 6), 2)  # croix V
+    # Glow progressif
+    pygame.draw.circle(surface, (30, 100, 150), (dx, dy), 25)
+    pygame.draw.circle(surface, (40, 150, 200), (dx, dy), 20)
+    # Carré principal
+    rect_def = pygame.Rect(dx - 15, dy - 15, 30, 30)
+    pygame.draw.rect(surface, BLEU, rect_def)
+    pygame.draw.rect(surface, BLEU_CLAIR, rect_def, 2)
 
-    # ── 6) Légende en bas de l'écran ────────────────────────────────
+    # Légende moderne et élégante
     if police_info is None:
-        police_info = pygame.font.Font(None, 22)
+        police_info = pygame.font.Font(None, 19)
 
-    # Liste des éléments de légende : (couleur, texte)
-    legende_items = [
-        (MARRON,       "Chemin"),
-        (ROUGE,        "Base Attaquant"),
-        (BLEU,         "Base Défenseur"),
-        ((25, 50, 25), "Zone de placement"),
-    ]
-    ly = HAUTEUR_FENETRE - 30   # position Y de la légende
-    lx = MARGE_X                # position X de départ
+    legend_y = HAUTEUR_FENETRE - 40
+    # Fond dégradé pour la légende
+    legend_surface = pygame.Surface((LARGEUR_FENETRE, 40))
+    legend_surface.fill((8, 12, 28))
+    # Dégradé bleu subtil
+    for i in range(40):
+        ratio = i / 40
+        couleur = (int(8 + 20 * ratio), int(12 + 30 * ratio), int(28 + 50 * ratio))
+        pygame.draw.line(legend_surface, couleur, (0, i), (LARGEUR_FENETRE, i))
+    surface.blit(legend_surface, (0, legend_y))
+    
+    # Bordures avec couleurs
+    pygame.draw.line(surface, (70, 150, 255), (0, legend_y), (LARGEUR_FENETRE, legend_y), 2)
+    pygame.draw.line(surface, (150, 80, 255), (0, HAUTEUR_FENETRE - 1), (LARGEUR_FENETRE, HAUTEUR_FENETRE - 1), 1)
+
+    legende_items = [(CHEMIN_OR, "* Chemin"), (ROUGE, "* Base Attaquant"),
+                      (BLEU, "* Base Defenseur")]
+    if afficher_zones:
+        legende_items.append((ZONE_VERT, "* Zone placement"))
+    ly = legend_y + 10
+    lx = MARGE_X + 15
     for couleur, texte in legende_items:
-        # Petit carré coloré + texte à côté
-        pygame.draw.rect(surface, couleur, (lx, ly, 14, 14))
-        pygame.draw.rect(surface, BLANC, (lx, ly, 14, 14), 1)
-        label = police_info.render(texte, True, BLANC)
-        surface.blit(label, (lx + 18, ly - 1))
-        lx += label.get_width() + 35  # espacement entre les items
+        label = police_info.render(texte, True, couleur)
+        surface.blit(label, (lx, ly))
+        lx += label.get_width() + 45
 
-    # ── 7) Titre centré en haut ─────────────────────────────────────
-    police_titre = pygame.font.Font(None, 30)
-    titre = police_titre.render("LEGENDS STRIKES — Plateau de jeu", True, BLANC)
-    surface.blit(titre, (LARGEUR_FENETRE // 2 - titre.get_width() // 2, 8))
-
-
-def dessiner_infos_partie(surface, joueur_atk, joueur_def, tour, police=None):
-    """
-    Affiche le HUD (Head-Up Display) avec les infos des joueurs et le tour.
+    # Titre ultra-moderne en blanc avec ombre subtile
+    police_titre = pygame.font.Font(None, 38)
+    titre_texte = "*** LEGENDS STRIKES — Plateau de jeu ***"
     
-    Affiché juste au-dessus de la grille :
-      - À gauche  : nom de l'attaquant, son or, nombre d'unités (en rouge)
-      - Au centre : numéro du tour actuel (en jaune)
-      - À droite  : nom du défenseur, son or, nombre de tours posées (en bleu)
+    # Ombre portée
+    titre_ombre = police_titre.render(titre_texte, True, (100, 80, 180))
+    titre_rect = titre_ombre.get_rect(center=(LARGEUR_FENETRE // 2 + 2, 17))
+    surface.blit(titre_ombre, titre_rect)
     
-    Args:
-        surface (pygame.Surface) : surface sur laquelle dessiner
-        joueur_atk (Joueur)      : le joueur attaquant
-        joueur_def (Joueur)      : le joueur défenseur
-        tour (int)               : numéro du tour actuel
-        police (Font, opt)       : police pour le texte (créée si None)
-    """
+    # Titre principal blanc
+    titre = police_titre.render(titre_texte, True, BLANC)
+    titre_rect = titre.get_rect(center=(LARGEUR_FENETRE // 2, 15))
+    surface.blit(titre, titre_rect)
+    
+    # Ligne décorative sous le titre avec gradient
+    pygame.draw.line(surface, (70, 150, 255), (LARGEUR_FENETRE // 2 - 170, 35), 
+                     (LARGEUR_FENETRE // 2 + 170, 35), 3)
+    pygame.draw.line(surface, (150, 80, 255), (LARGEUR_FENETRE // 2 - 170, 36), 
+                     (LARGEUR_FENETRE // 2 + 170, 36), 1)
+
+
+
+def dessiner_infos_partie(surface, joueur_atk, joueur_def, tour, police=None, afficher_stats_atk=True, afficher_stats_def=True):
+    """Affiche le HUD moderne avec style gaming."""
     if police is None:
-        police = pygame.font.Font(None, 24)
+        police = pygame.font.Font(None, 28)
+        police_petit = pygame.font.Font(None, 21)
+    else:
+        police_petit = pygame.font.Font(None, 21)
 
-    # ── Infos attaquant (à gauche, en rouge) ────────────────────────
-    txt_atk = police.render(
-        f"⚔ {joueur_atk.nom}  Or: {joueur_atk.or_disponible}  Unités: {len(joueur_atk.unites)}",
-        True, ROUGE
-    )
-    surface.blit(txt_atk, (MARGE_X, MARGE_Y - 25))
+    hud_y = MARGE_Y - 40
+    hud_height = 45
+    
+    # Fond dégradé pour le HUD avec bordures colorées
+    hud_surface = pygame.Surface((LARGEUR_FENETRE, hud_height))
+    # Dégradé bleu sombre → noir
+    for i in range(hud_height):
+        ratio = i / hud_height
+        couleur = (
+            int(10 + 15 * (1 - ratio)),
+            int(15 + 20 * (1 - ratio)),
+            int(30 + 40 * (1 - ratio))
+        )
+        pygame.draw.line(hud_surface, couleur, (0, i), (LARGEUR_FENETRE, i))
+    surface.blit(hud_surface, (0, hud_y))
+    
+    # Bordures décoratives
+    pygame.draw.line(surface, (70, 150, 255), (0, hud_y), (LARGEUR_FENETRE, hud_y), 2)
+    pygame.draw.line(surface, (150, 80, 255), (0, hud_y + hud_height - 1), (LARGEUR_FENETRE, hud_y + hud_height - 1), 1)
 
-    # ── Infos défenseur (à droite, en bleu) ─────────────────────────
-    txt_def = police.render(
-        f"🛡 {joueur_def.nom}  Or: {joueur_def.or_disponible}  Tours: {len(joueur_def.unites)}",
-        True, BLEU_CLAIR
-    )
-    surface.blit(txt_def, (LARGEUR_FENETRE - MARGE_X - txt_def.get_width(), MARGE_Y - 25))
+    # Attaquant - Côté gauche avec accent rouge
+    txt_atk_nom = police.render(f">> {joueur_atk.nom}", True, ROUGE)
+    if afficher_stats_atk:
+        txt_atk_stats = police_petit.render(f"Or: {joueur_atk.or_disponible} | Unites: {len(joueur_atk.unites)}", True, ROUGE_CLAIR)
+    else:
+        txt_atk_stats = police_petit.render("Or: -- | Unites: --", True, ROUGE_CLAIR)
+    surface.blit(txt_atk_nom, (MARGE_X + 15, hud_y + 5))
+    surface.blit(txt_atk_stats, (MARGE_X + 15, hud_y + 25))
+    
+    # Ligne décorative sous attaquant
+    pygame.draw.line(surface, ROUGE, (MARGE_X + 10, hud_y + 42), (MARGE_X + 240, hud_y + 42), 1)
 
-    # ── Numéro du tour (centré, en jaune) ───────────────────────────
-    txt_tour = police.render(f"Tour {tour}", True, JAUNE)
-    surface.blit(txt_tour, (LARGEUR_FENETRE // 2 - txt_tour.get_width() // 2, MARGE_Y - 25))
+    # Défenseur - Côté droit avec accent bleu
+    txt_def_nom = police.render(f"{joueur_def.nom} <<", True, BLEU_CLAIR)
+    if afficher_stats_def:
+        txt_def_stats = police_petit.render(f"Or: {joueur_def.or_disponible} | Tours: {len(joueur_def.unites)}", True, BLEU_CLAIR)
+    else:
+        txt_def_stats = police_petit.render("Or: -- | Tours: --", True, BLEU_CLAIR)
+    surface.blit(txt_def_nom, (LARGEUR_FENETRE - MARGE_X - txt_def_nom.get_width() - 15, hud_y + 5))
+    surface.blit(txt_def_stats, (LARGEUR_FENETRE - MARGE_X - txt_def_stats.get_width() - 15, hud_y + 25))
+    
+    # Ligne décorative sous défenseur
+    pygame.draw.line(surface, BLEU, (LARGEUR_FENETRE - MARGE_X - 240, hud_y + 42), (LARGEUR_FENETRE - MARGE_X - 10, hud_y + 42), 1)
+
+    # Numéro de tour au centre sans glow
+    txt_tour = police.render(f"TOUR {tour}", True, OR_ACCENT)
+    tour_ombre = pygame.font.Font(None, 28)
+    txt_tour_ombre = tour_ombre.render(f"TOUR {tour}", True, (100, 80, 20))
+    tour_rect = txt_tour.get_rect(center=(LARGEUR_FENETRE // 2, hud_y + 20))
+    
+    surface.blit(txt_tour_ombre, (tour_rect.x + 2, tour_rect.y + 2))
+    surface.blit(txt_tour, tour_rect)
+
