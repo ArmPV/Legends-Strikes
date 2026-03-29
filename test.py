@@ -1,12 +1,34 @@
 import pygame
 import sys
 import math
+import os
+import time
 from plateau import Plateau, Joueur, LARGEUR_FENETRE, HAUTEUR_FENETRE, NOIR, ZONE_PLACE, dessiner_plateau, dessiner_infos_partie
 from phases import GestionnairePhases, InterfaceAttaquant, InterfaceDefenseur, PHASE_PREPARATION_ATTAQUE, PHASE_PREPARATION_DEFENSE, PHASE_VAGUE
 from unites import CREATURES_DISPONIBLES, TOURS_DISPONIBLES, EVOLUTIONS_PAR_TOUR
 
 # Initialisation de Pygame
 pygame.init()
+pygame.mixer.init()
+
+
+# ══════════════════════════════════════════════════════════════════════════
+#  BANQUE DE SONS
+# ══════════════════════════════════════════════════════════════════════════
+
+voiceprepare = pygame.mixer.Sound("audios/prepare_yourself.ogg")
+voiceprepare.set_volume(0.05)
+youwin = pygame.mixer.Sound("audios/you_win.ogg")
+youwin.set_volume(0.05)
+voicewinner = pygame.mixer.Sound("audios/winner.ogg")  
+voicewinner.set_volume(0.05)
+end = pygame.mixer.Sound("audios/impactGeneric_light_001.ogg")
+end.set_volume(0.05)
+musiquemenu = pygame.mixer.Sound("audios/song_jeux.ogg")
+musiquemenu.set_volume(0.05)
+musiquegame = pygame.mixer.Sound("audios/song_bataille.ogg")
+musiquegame.set_volume(0.05)
+
 
 # Configuration de la fenetre
 LARGEUR = 1280
@@ -437,6 +459,7 @@ def lancer_plateau():
     # - mise à jour de l'état de simulation,
     # - rendu de la phase active.
     while en_jeu:
+        musiquegame.play(-1)
         dt = clock_jeu.tick(60) / 1000.0
 
         # Boucle événementielle Pygame: traite fermeture, clavier et clics.
@@ -605,6 +628,7 @@ def lancer_plateau():
                 dernier_index = len(plateau.chemin) - 1
                 if c.progression >= dernier_index:
                     c.a_atteint_base = True
+                    end.play()
                     arrivees_base += 1
                     degats = _degats_base_par_type(getattr(c, "type_id", "legere"))
                     degats_base_vague += degats
@@ -662,8 +686,11 @@ def lancer_plateau():
                     joueur_def.or_disponible += gain_def
                     texte_vague = f"Defense parfaite ! Defenseur +{gain_def} or"
 
+
                 if base_def_pv <= 0:
                     texte_vague = "Base defense detruite: victoire Attaquant"
+                    musiquegame.stop()
+                    voicewinner.play()
                     en_jeu = False
 
             if texte_vague:
@@ -685,6 +712,8 @@ def lancer_plateau():
                 # Si la base tient jusqu'à la fin du round 10, victoire défense.
                 if tour > 10 and base_def_pv > 0:
                     message_action = "Victoire Defense: base intacte au round 10"
+                    musiquegame.stop()
+                    voicewinner.play()
                     message_timer = pygame.time.get_ticks() + 2000
                     en_jeu = False
 
@@ -711,6 +740,8 @@ angle_animation = 0
 # Boucle principale du menu:
 # mise à jour des interactions des boutons et affichage décoratif.
 while en_cours:
+
+    musiquemenu.play(-1)
     pos_souris = pygame.mouse.get_pos()
     clic = False
     angle_animation = (angle_animation + 1) % 360
@@ -729,8 +760,11 @@ while en_cours:
         bouton.verifier_survol(pos_souris)
     
     if bouton_jouer.est_clique(pos_souris, clic):
+        musiquemenu.stop()
+        voiceprepare.play()
         lancer_plateau()
-    
+        pygame.time.wait(2000)
+
     if bouton_parametres.est_clique(pos_souris, clic):
         print("Parametres clique !")
     

@@ -10,7 +10,18 @@ Ce module contient :
 
 import pygame
 import math
+import os
 
+
+# ══════════════════════════════════════════════════════════════════════════
+#  BANQUE DE SONS
+# ══════════════════════════════════════════════════════════════════════════
+
+pygame.mixer.init()
+degat = pygame.mixer.Sound("audios/impactMetal_heavy_000.ogg")
+degat.set_volume(0.05)
+mort = pygame.mixer.Sound("audios/eliminated.ogg")
+mort.set_volume(0.05)
 
 # ══════════════════════════════════════════════════════════════════════════
 #  CRÉATURES (CÔTÉ ATTAQUANT)
@@ -68,6 +79,12 @@ class Creature:
             degt_reduits = degats
         
         self.pv -= degt_reduits
+        
+        if 0 < self.pv:
+            degat.play()
+        else :
+            mort.play()
+
         return self.pv <= 0  # Retourne True si mort
     
     def reveler_camoufle(self):

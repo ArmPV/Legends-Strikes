@@ -25,6 +25,22 @@ PHASE_ATTAQUE = "attaque"
 PHASE_PREPARATION_DEFENSE = "preparation_defense"
 PHASE_VAGUE = "vague"
 
+# ══════════════════════════════════════════════════════════════════════════
+#  BANQUE DE SONS
+# ══════════════════════════════════════════════════════════════════════════
+
+pygame.mixer.init()
+
+voicep1 = pygame.mixer.Sound("audios/player_1.ogg")
+voicep1.set_volume(0.05)
+voicep2 = pygame.mixer.Sound("audios/player_2.ogg")
+voicep2.set_volume(0.05) 
+voicefight = pygame.mixer.Sound("audios/fight.ogg")
+voicefight.set_volume(0.05)
+clic3 = pygame.mixer.Sound("audios/click3.ogg")
+clic3.set_volume(0.05)
+
+
 
 # ══════════════════════════════════════════════════════════════════════════
 #  EXTENSION JOUEUR - AMÉLIORATIONS ET INTÉRÊT
@@ -87,6 +103,7 @@ class AmeliorationsJoueur:
                     joueur.or_disponible -= cout
                     self.pv += 1
                     self.mult_pv = 1.0 + (self.pv * 0.2)  # +20% par rang
+                    clic3.play()
                     return True
             
             elif type_am == "vitesse":
@@ -95,6 +112,7 @@ class AmeliorationsJoueur:
                     joueur.or_disponible -= cout
                     self.vitesse += 1
                     self.mult_vitesse = 1.0 + (self.vitesse * 0.15)  # +15% par rang
+                    clic3.play()
                     return True
             
             elif type_am == "reduction_cout":
@@ -103,6 +121,7 @@ class AmeliorationsJoueur:
                     joueur.or_disponible -= cout
                     self.cout_reduction += 1
                     self.mult_cout = 1.0 - (self.cout_reduction * 0.1)  # -10% par rang
+                    clic3.play()
                     return True
         
         else:  # defenseur
@@ -112,6 +131,7 @@ class AmeliorationsJoueur:
                     joueur.or_disponible -= cout
                     self.degats += 1
                     self.mult_degats = 1.0 + (self.degats * 0.2)
+                    clic3.play()
                     return True
             
             elif type_am == "portee":
@@ -120,6 +140,7 @@ class AmeliorationsJoueur:
                     joueur.or_disponible -= cout
                     self.portee += 1
                     self.mult_portee = 1.0 + (self.portee * 0.1)
+                    clic3.play()
                     return True
             
             elif type_am == "vitesse":
@@ -128,6 +149,7 @@ class AmeliorationsJoueur:
                     joueur.or_disponible -= cout
                     self.vitesse += 1
                     self.mult_vitesse = 1.0 + (self.vitesse * 0.15)
+                    clic3.play()
                     return True
 
             elif type_am == "pv":
@@ -136,6 +158,7 @@ class AmeliorationsJoueur:
                     joueur.or_disponible -= cout
                     self.pv_base += 1
                     self.mult_pv_base = 1.0 + (self.pv_base * 0.2)
+                    clic3.play()
                     return True
 
             elif type_am == "interet":
@@ -144,6 +167,7 @@ class AmeliorationsJoueur:
                     joueur.or_disponible -= cout
                     self.interet += 1
                     joueur.augmenter_interet(0.01)
+                    clic3.play()
                     return True
         
         return False
@@ -168,6 +192,12 @@ class GestionnairePhases:
     def changer_phase(self, nouvelle_phase):
         """Change la phase actuelle."""
         self.phase_actuelle = nouvelle_phase
+        if nouvelle_phase == PHASE_PREPARATION_ATTAQUE:
+            voicep1.play()
+        if nouvelle_phase == PHASE_PREPARATION_DEFENSE:
+            voicep2.play()
+        if nouvelle_phase == PHASE_VAGUE:
+            voicefight.play()
     
     def sequence_phases(self):
         """Retourne la séquence de phases."""
@@ -285,6 +315,7 @@ class InterfaceAttaquant:
                     if joueur_atk.or_disponible >= cout:
                         joueur_atk.or_disponible -= cout
                         joueur_atk.unites.append({"type": "legere", "pv": 50})
+                        clic3.play()
                         return "creature_ajoutee"
                 
                 elif type_action == "lourd":
@@ -292,6 +323,7 @@ class InterfaceAttaquant:
                     if joueur_atk.or_disponible >= cout:
                         joueur_atk.or_disponible -= cout
                         joueur_atk.unites.append({"type": "lourd", "pv": 200})
+                        clic3.play()
                         return "creature_ajoutee"
                 
                 elif type_action == "camouflee":
@@ -299,22 +331,27 @@ class InterfaceAttaquant:
                     if joueur_atk.or_disponible >= cout:
                         joueur_atk.or_disponible -= cout
                         joueur_atk.unites.append({"type": "camouflee", "pv": 60})
+                        clic3.play()
                         return "creature_ajoutee"
                 
                 elif type_action == "am_pv":
                     if len(joueur_atk.unites) > 0 and joueur_atk.ameliorations.acheter_amelioration("pv", joueur_atk):
+                        clic3.play()
                         return "amelioration_achetee"
                 
                 elif type_action == "am_vitesse":
                     if len(joueur_atk.unites) > 0 and joueur_atk.ameliorations.acheter_amelioration("vitesse", joueur_atk):
+                        clic3.play()
                         return "amelioration_achetee"
                 
                 elif type_action == "am_cout":
                     if len(joueur_atk.unites) > 0 and joueur_atk.ameliorations.acheter_amelioration("reduction_cout", joueur_atk):
+                        clic3.play()
                         return "amelioration_achetee"
                 
                 elif type_action == "valider":
                     if len(joueur_atk.unites) > 0:
+                        clic3.play()
                         return "attaque_validee"
         
         return None
@@ -413,42 +450,51 @@ class InterfaceDefenseur:
                     if joueur_def.or_disponible >= 20:
                         joueur_def.or_disponible -= 20
                         joueur_def.unites.append({"type": "fleche", "degats": 15})
+                        clic3.play()
                         return "tour_ajoutee"
                 
                 elif type_action == "epee":
                     if joueur_def.or_disponible >= 30:
                         joueur_def.or_disponible -= 30
                         joueur_def.unites.append({"type": "epee", "degats": 45})
+                        clic3.play()
                         return "tour_ajoutee"
                 
                 elif type_action == "eau":
                     if joueur_def.or_disponible >= 40:
                         joueur_def.or_disponible -= 40
                         joueur_def.unites.append({"type": "eau", "degats": 5})
+                        clic3.play()
                         return "tour_ajoutee"
                 
                 elif type_action == "am_degats":
                     if joueur_def.ameliorations.acheter_amelioration("degats", joueur_def):
+                        clic3.play()
                         return "amelioration_achetee"
                 
                 elif type_action == "am_portee":
                     if joueur_def.ameliorations.acheter_amelioration("portee", joueur_def):
+                        clic3.play()
                         return "amelioration_achetee"
                 
                 elif type_action == "am_vitesse":
                     if joueur_def.ameliorations.acheter_amelioration("vitesse", joueur_def):
+                        clic3.play()
                         return "amelioration_achetee"
 
                 elif type_action == "am_pv":
                     if joueur_def.ameliorations.acheter_amelioration("pv", joueur_def):
+                        clic3.play()
                         return "amelioration_achetee"
 
                 elif type_action == "am_interet":
                     if joueur_def.ameliorations.acheter_amelioration("interet", joueur_def):
+                        clic3.play()
                         return "amelioration_achetee"
                 
                 elif type_action == "valider":
                     if len(joueur_def.unites) > 0:
+                        clic3.play()
                         return "defense_validee"
         
         return None

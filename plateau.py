@@ -19,8 +19,14 @@ Architecture du jeu :
 import random
 import pygame
 import math
+import os
 from phases import AmeliorationsJoueur
 
+# ══════════════════════════════════════════════════════════════════════════
+#  BANQUE DE SONS
+# ══════════════════════════════════════════════════════════════════════════
+
+pygame.mixer.init()
 
 # ══════════════════════════════════════════════════════════════════════════
 #  CONSTANTES DU PLATEAU
