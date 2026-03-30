@@ -2,7 +2,17 @@
 
 # Tower Defense Asymétrique : Duel Stratégique
 
-## Description
+## Prérequis
+Avant de lancer le projet, assurez‑vous d’avoir :
+- **Python** installé
+- **Pygame** installé
+
+## Lancement du projet
+1- Ouvrir le dossier du projet
+2- Ouvrir un terminal dans ce dossier
+3- Lancer le fichier python main.py dans le terminal
+
+## Description du projet
 
 Ce projet est une version originale d’un **Tower Defense** en mode 1 contre 1.  
 
@@ -82,6 +92,12 @@ Le jeu se déroule par **tours**, chaque tour comprenant plusieurs étapes :
 5. **Fin de la partie**  
    La partie se termine lorsque la base du Défenseur atteint 0 PV (victoire de l’Attaquant) ou lorsque l’Attaquant n’a plus assez de ressources pour lancer une nouvelle vague (victoire du Défenseur). Le score est donc affiché.
 
+## Structure du projet
+/LegendsStrikes
+│── main.py
+│── assets/        # images, sons (si ajoutés)
+│── README.md
+│── ...
 
 ## Équipe
 20231925 NARAYANASSAMYCHETTIAR VISWADEVI
@@ -91,5 +107,12 @@ Le jeu se déroule par **tours**, chaque tour comprenant plusieurs étapes :
 20233004 PLUVINET-VIAENE ARMAND
 
 20230692 NGUARA NGOMA MARC
+
+## État actuel
+- Interface graphique
+- Mettre en ligne
+- Améliorer toute les fonctionnalités
+- Effets spéciaux et bonus avancés
+- Ajout des animations
 
 
