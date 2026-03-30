@@ -25,9 +25,9 @@ voicewinner.set_volume(0.05)
 end = pygame.mixer.Sound("audios/impactGeneric_light_001.ogg")
 end.set_volume(0.05)
 musiquemenu = pygame.mixer.Sound("audios/song_jeux.ogg")
-musiquemenu.set_volume(0.05)
+musiquemenu.set_volume(0.03)
 musiquegame = pygame.mixer.Sound("audios/song_bataille.ogg")
-musiquegame.set_volume(0.05)
+musiquegame.set_volume(0.025)
 
 
 # Configuration de la fenetre
@@ -458,8 +458,14 @@ def lancer_plateau():
     # - lecture des entrées joueur,
     # - mise à jour de l'état de simulation,
     # - rendu de la phase active.
+    musiquegameon = False
     while en_jeu:
-        musiquegame.play(-1)
+
+        if musiquegameon == False:
+            musiquemenu.stop()
+            musiquegame.play(-1)
+            musiquegameon = True
+
         dt = clock_jeu.tick(60) / 1000.0
 
         # Boucle événementielle Pygame: traite fermeture, clavier et clics.
@@ -690,6 +696,7 @@ def lancer_plateau():
                 if base_def_pv <= 0:
                     texte_vague = "Base defense detruite: victoire Attaquant"
                     musiquegame.stop()
+                    musiquegameon = False
                     voicewinner.play()
                     en_jeu = False
 
@@ -713,6 +720,7 @@ def lancer_plateau():
                 if tour > 10 and base_def_pv > 0:
                     message_action = "Victoire Defense: base intacte au round 10"
                     musiquegame.stop()
+                    musiquegameon = False
                     voicewinner.play()
                     message_timer = pygame.time.get_ticks() + 2000
                     en_jeu = False
@@ -739,9 +747,15 @@ angle_animation = 0
 
 # Boucle principale du menu:
 # mise à jour des interactions des boutons et affichage décoratif.
+
+musiquemenuon = False
+
 while en_cours:
 
-    musiquemenu.play(-1)
+    if musiquemenuon == False:
+        musiquemenu.play(-1)
+        musiquemenuon = True
+
     pos_souris = pygame.mouse.get_pos()
     clic = False
     angle_animation = (angle_animation + 1) % 360
@@ -761,6 +775,7 @@ while en_cours:
     
     if bouton_jouer.est_clique(pos_souris, clic):
         musiquemenu.stop()
+        musiquemenuon = False
         voiceprepare.play()
         lancer_plateau()
         pygame.time.wait(2000)

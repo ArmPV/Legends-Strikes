@@ -38,7 +38,7 @@ voicep2.set_volume(0.05)
 voicefight = pygame.mixer.Sound("audios/fight.ogg")
 voicefight.set_volume(0.05)
 clic3 = pygame.mixer.Sound("audios/click3.ogg")
-clic3.set_volume(0.05)
+clic3.set_volume(0.1)
 
 
 
