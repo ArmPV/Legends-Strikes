@@ -157,11 +157,13 @@ Le jeu se déroule par **tours**, chaque tour comprenant plusieurs étapes :
 ```text
 Legends-Strikes/
 │
-├── main.py
-├── README.md
-├── image/                     # Ressources graphiques
+├── main.py                 # Lance le jeu
+├── README.md               # Documentation du projet
+├── repartition_effectif.pdf
+├── journalgit.txt          # Journal Git récapitulatif
+├── assets/                 # Images, polices, musiques, sprites du jeu
 │
-├── 1e_contribution/           # Documents de conception et première contribution
+├── 1e_contribution/        # Documents de conception et première contribution (UML, rapport, journal Git)
 │   ├── 1e_contribution_Tower_Defense.pdf
 │   ├── diagramme_activité.png
 │   ├── diagramme_cas_utilisation.png
@@ -169,18 +171,21 @@ Legends-Strikes/
 │   ├── diagramme_sequence.png
 │   └── journal_git.txt
 │
-└── game/                      # Code source du jeu
-    ├── board.py
-    ├── creatures.py
-    ├── effects.py
-    ├── init.py
-    ├── path.py
-    ├── players.py
-    ├── towers.py
-    ├── turnPlayer.py
-    ├── utils.py
-    ├── vision.py
-    └── wave.py
+└── game/                   # Code source du jeu
+    ├── _init_.py           # Déclare le module
+    ├── assets.py           # Chargement des ressources
+    ├── board.py            # Plateau de jeu
+    ├── constants.py        # Constantes globales
+    ├── creatures.py        # Créatures et comportements
+    ├── effects.py          # Effets globaux et bonus
+    ├── path.py             # Chemin et zones
+    ├── players.py          # Attaquant / Défenseur
+    ├── towers.py           # Tours et améliorations
+    ├── turnPlayer.py       # Gestion des tours de jeu
+    ├── ui.py               # Interface utilisateur
+    ├── utils.py            # Fonctions utilitaires
+    ├── vision.py           # Portée et visibilité
+    └── wave.py             # Gestion des vagues
 ```
 
 
