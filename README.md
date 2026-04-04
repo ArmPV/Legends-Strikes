@@ -152,6 +152,9 @@ Le jeu se déroule par **tours**, chaque tour comprenant plusieurs étapes :
 
 ## Structure du projet
 
+## Structure du projet
+
+```text
 Legends-Strikes/
 │
 ├── main.py
@@ -178,6 +181,7 @@ Legends-Strikes/
     ├── utils.py
     ├── vision.py
     └── wave.py
+```
 
 
 ## Équipe
