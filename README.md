@@ -64,33 +64,33 @@ Le jeu se termine par :
 ## Système de Ressources
 
 Le système de ressources a été ajusté pour équilibrer le duel entre l’Attaquant et le Défenseur.
-Les gains dépendent désormais de l’avancée des créatures sur le chemin.
+Les gains dépendent désormais **de l’avancée des créatures sur le chemin.**
 1. **Suppression du bonus fixe du Défenseur**
 
-    Le bonus automatique de +40 crédits en fin de vague a été retiré.
+- Le bonus automatique de **+40 crédits** en fin de vague a été retiré.
 
-    Si le Défenseur ne tue aucune créature, il ne gagne aucune ressource.
+- Si le Défenseur ne tue aucune créature, il ne gagne **aucune ressource.**
 
 2. **Récompense dynamique selon la position de mort**
 
 Chaque créature tuée rapporte des crédits au Défenseur, mais le montant dépend de l’endroit où elle meurt.
 
-Le chemin est découpé en 3 zones :
+Le chemin est découpé en **3 zones** :
 
-    Zone 1 : début du chemin (avant le 5ᵉ point)
+- **Zone 1** : début du chemin (avant le 5ᵉ point)
 
-    Zone 2 : milieu (entre le 5ᵉ et le 9ᵉ point)
+- **Zone 2** : milieu (entre le 5ᵉ et le 9ᵉ point)
 
-    Zone 3 : fin du chemin (après le 9ᵉ point)
+- **Zone 3** : fin du chemin (après le 9ᵉ point)
 
 3. **Coefficients appliqués à la récompense**
 
 Chaque créature possède une reward de base.
 On applique un coefficient selon la zone où elle meurt :
-Zone	Avancée	Gain Défenseur
-Zone 1	Début	65% de la reward
-Zone 2	Milieu	40% de la reward
-Zone 3	Fin	20% de la reward
+
+- **Zone 1** : Début : **65%** de la reward
+- **Zone 2** : Milieu : **40%** de la reward
+- **Zone 3** : Fin : **20%** de la reward
 
 Les créatures fortes rapportent toujours plus que les faibles, mais les gains ont été nerfés pour éviter que le Défenseur snowball trop vite.
 
@@ -98,22 +98,22 @@ Les créatures fortes rapportent toujours plus que les faibles, mais les gains o
 
 L’Attaquant gagne aussi des ressources selon la survie de ses créatures :
 
-    Si une créature atteint la base :
-    → l’Attaquant gagne 100% de sa reward habituelle
+- **Si une créature atteint la base :**
+    → l’Attaquant gagne **100%** de sa reward habituelle
 
-    Si elle meurt en Zone 3 :
-    → l’Attaquant gagne 50% de sa reward
+- **Si elle meurt en Zone 3 :**
+    → l’Attaquant gagne **50%** de sa reward
 
-    Si elle meurt en Zone 1 ou 2 :
-    → l’Attaquant ne gagne rien
+- **Si elle meurt en Zone 1 ou 2 :**
+    → l’Attaquant ne gagne **rien**
 
 5. **Cas particulier : créatures invoquées**
 
 Les créatures invoquées par le summoner :
 
-    rapportent moins de ressources au Défenseur
+- rapportent **moins** de ressources au Défenseur
 
-    infligent moins de dégâts à la base
+- infligent **moins** de dégâts à la base
 
 ## Créatures
 
