@@ -5,12 +5,17 @@
 ## Prérequis
 Avant de lancer le projet, assurez‑vous d’avoir :
 - **Python** installé
-- **Pygame** installé
+- **Pygame** installé (`pip install pygame`)
 
 ## Lancement du projet
-1- Ouvrir le dossier du projet
-2- Ouvrir un terminal dans ce dossier
-3- Lancer le fichier python main.py dans le terminal
+
+1. Ouvrir le dossier du projet  
+2. Ouvrir un terminal dans ce dossier  
+3. Lancer le fichier avec la commande :
+
+```bash
+python main.py
+```
 
 ## Description du projet
 
@@ -93,11 +98,33 @@ Le jeu se déroule par **tours**, chaque tour comprenant plusieurs étapes :
    La partie se termine lorsque la base du Défenseur atteint 0 PV (victoire de l’Attaquant) ou lorsque l’Attaquant n’a plus assez de ressources pour lancer une nouvelle vague (victoire du Défenseur). Le score est donc affiché.
 
 ## Structure du projet
-/LegendsStrikes
-│── main.py
-│── assets/        # images, sons (si ajoutés)
-│── README.md
-│── ...
+Legends-Strikes/
+│
+├── main.py
+├── README.md
+├── image/                     # Ressources graphiques
+│
+├── 1e_contribution/           # Documents de conception et première contribution
+│   ├── 1e_contribution_Tower_Defense.pdf
+│   ├── diagramme_activité.png
+│   ├── diagramme_cas_utilisation.png
+│   ├── diagramme_classe.png
+│   ├── diagramme_sequence.png
+│   └── journal_git.txt
+│
+└── game/                      # Code source du jeu
+    ├── board.py
+    ├── creatures.py
+    ├── effects.py
+    ├── init.py
+    ├── path.py
+    ├── players.py
+    ├── towers.py
+    ├── turnPlayer.py
+    ├── utils.py
+    ├── vision.py
+    └── wave.py
+
 
 ## Équipe
 20231925 NARAYANASSAMYCHETTIAR VISWADEVI
