@@ -272,7 +272,6 @@ class UI:
 
             # Text
             name_txt = self.font_small.render(info['name'], True, (236, 225, 208))
-            cost_txt = self.font_tiny.render(f"{info['cost']}g", True, (235, 200, 75))
             desc_txt = self.font_tiny.render(info['description'], True, (176, 146, 118))
 
             screen.blit(name_txt, (rect.x + 14, rect.y + 5))
