@@ -159,7 +159,7 @@ Legends-Strikes/
 │
 ├── main.py                 # Lance le jeu
 ├── README.md               # Documentation du projet
-├── repartition_effectif.pdf
+├── repartition_effective.pdf
 ├── journalgit.txt          # Journal Git récapitulatif
 ├── .gitignore              # Fichiers à ignorer par Git
 ├── assets/                 # Images, polices, musiques, sprites du jeu
