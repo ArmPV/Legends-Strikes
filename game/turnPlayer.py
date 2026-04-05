@@ -63,7 +63,7 @@ class TurnPlayer:
         return 3
 
     def _get_attacker_base_reward(self, creature):
-        return max(10, creature.cost // 3)
+        return max(30, creature.cost // 2)
 
     def _get_defender_kill_reward(self, creature, zone):
         amount = int(round(creature.reward * DEFENDER_KILL_ZONE_MULTIPLIERS.get(zone, 0.20)))

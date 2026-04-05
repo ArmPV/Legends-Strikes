@@ -293,6 +293,9 @@ class TowerDefenseGame:
 
     def can_launch_current_wave(self):
         wave_cost = sum(creature.cost for creature in self.current_wave.creatures)
+        
+        if self.current_wave.get_creature_count() == 0:
+            return False
 
         if wave_cost <= 0:
             return False
@@ -313,7 +316,10 @@ class TowerDefenseGame:
 
     def launch_wave(self):
         if not self.can_launch_current_wave():
-            return
+            if self.current_wave.get_creature_count() == 0:
+                self.turn_player.startAttackerPhase()
+                self.game_state = "attacker_phase"
+                self.ui.reset_bonuses()
 
         if len(self.current_wave.creatures) > 0:
             if self.sound_enabled:
@@ -413,8 +419,8 @@ class TowerDefenseGame:
         elif self.game_state == "defender_phase":
             self.selected_defense_tower = None
             if not self.turn_player.wave_active:
-                self.game_state = "attacker_phase"
-                self.turn_player.startAttackerPhase()
+                self.game_state = "battle"
+                self.launch_wave()
 
     def upgrade_selected_tower(self):
         tower = self.selected_defense_tower

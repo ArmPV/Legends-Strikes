@@ -253,8 +253,8 @@ WAVE_BONUSES = {
 }
 
 STARTING_GOLD = {
-    'attacker': 600,
-    'defender': 350
+    'attacker': 500,
+    'defender': 400
 }
 
 STARTING_BASE_HP = 250
@@ -269,7 +269,7 @@ DEFENDER_KILL_ZONE_MULTIPLIERS = {
     2: 0.40,
     3: 0.20,
 }
-ATTACKER_LATE_REWARD_RATIO = 0.5
+ATTACKER_LATE_REWARD_RATIO = 1.5
 SUMMONED_REWARD_RATIO = 0.4
 SUMMONED_DAMAGE_RATIO = 0.6
 

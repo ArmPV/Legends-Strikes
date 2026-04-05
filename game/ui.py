@@ -135,15 +135,17 @@ class UI:
         self._draw_resources(screen, game)
 
         if game.game_state == "attacker_phase":
+            button_text = "CHANGER DE PHASE" 
+            self._draw_action_button(screen, self.end_phase_button, button_text, (86, 126, 64))
             self._draw_attacker_phase(screen, game)
+
         elif game.game_state == "defender_phase":
+            button_text = "LANCER LA VAGUE" 
+            self._draw_action_button(screen, self.end_phase_button, button_text, (140, 70, 45))
             self._draw_defender_phase(screen, game)
+            
         elif game.game_state == "battle":
             self._draw_battle_phase(screen, game)
-
-        if game.game_state in ("attacker_phase", "defender_phase"):
-            button_text = "PRET" if game.game_state == "defender_phase" else "CHANGER DE PHASE"
-            self._draw_action_button(screen, self.end_phase_button, button_text, (86, 126, 64))
 
         self._draw_phase_indicator(screen, game.game_state)
 
@@ -201,11 +203,6 @@ class UI:
             self._draw_creatures_tab(screen, game)
         else:
             self._draw_bonus_tab(screen, game)
-
-        # Launch wave button
-        can_launch = game.can_launch_current_wave()
-        btn_color = (140, 70, 45) if can_launch else (60, 60, 60)
-        self._draw_action_button(screen, self.launch_wave_button, "LANCER LA VAGUE", btn_color)
 
         total_cost = sum(c.cost for c in game.current_wave.creatures)
         total_creatures = len(game.current_wave.creatures)
@@ -275,7 +272,9 @@ class UI:
             desc_txt = self.font_tiny.render(info['description'], True, (176, 146, 118))
 
             screen.blit(name_txt, (rect.x + 14, rect.y + 5))
-            screen.blit(cost_txt, (rect.x + rect.width + -33, rect.y + 10))
+            if not active:
+                cost_txt = self.font_tiny.render(f"{info['cost']}g", True, (235, 200, 75))
+                screen.blit(cost_txt, (rect.x + rect.width + -33, rect.y + 10))
             screen.blit(desc_txt, (rect.x + 14, rect.y + 24))
 
             # Active indicator
@@ -384,7 +383,7 @@ class UI:
         spawned = game.turn_player.spawn_index
 
         # Battle card
-        card = pygame.Rect(panel_x + 14, 185, UI_PANEL_WIDTH - 28, 140)
+        card = pygame.Rect(panel_x + 14, 185, UI_PANEL_WIDTH - 28, 210)
         self._draw_card(screen, card)
 
         screen.blit(
