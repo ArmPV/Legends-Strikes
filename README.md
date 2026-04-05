@@ -161,6 +161,7 @@ Legends-Strikes/
 ├── README.md               # Documentation du projet
 ├── repartition_effectif.pdf
 ├── journalgit.txt          # Journal Git récapitulatif
+├── .gitignore              # Fichiers à ignorer par Git
 ├── assets/                 # Images, polices, musiques, sprites du jeu
 │
 ├── 1e_contribution/        # Documents de conception et première contribution (UML, rapport, journal Git)
