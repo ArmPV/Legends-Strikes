@@ -4,41 +4,22 @@ from game.effects import Effect
 
 
 class Wave:
-    def __init__(self, delay=20):
+    def __init__(self):
         self.creatures: List[Creature] = []
         self.bonuses: List[Effect] = []
-
-        self.active: List[Creature] = []
-        self.delay = delay
-        self.timer = 0
-        self.finished = False
+        self.active_bonuses: List[str] = []
 
     def add_creature(self, creature: Creature):
         self.creatures.append(creature)
 
-    def set_path(self, path):
-        for c in self.creatures:
-            c.set_path(path)
+    def add_bonus(self, bonus: Effect):
+        self.bonuses.append(bonus)
 
-    def update(self):
-        if self.finished:
-            return
+    def get_total_cost(self) -> int:
+        return sum(c.cost for c in self.creatures)
 
-        # Envoi progressif
-        if self.timer <= 0 and self.creatures:
-            c = self.creatures.pop(0)
-            self.active.append(c)
-            self.timer = self.delay
-        else:
-            self.timer -= 1
-
-        # Mise à jour des créatures actives
-        for c in self.active:
-            c.update()
-
-        # Nettoyage
-        self.active = [c for c in self.active if c.alive]
-
-        # Fin de vague
-        if not self.creatures and not self.active:
-            self.finished = True
+    def get_creature_count(self) -> int:
+        return len(self.creatures)
+def apply_default_bonus(self):
+    for creature in self.creatures:
+        creature.hp += 10

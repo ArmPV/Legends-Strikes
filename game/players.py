@@ -4,7 +4,6 @@ from game.wave import Wave
 from game.towers import Tower
 from game.board import Cell
 
-
 @dataclass
 class Player:
     id_player: int
@@ -13,11 +12,10 @@ class Player:
     gold: int
     baseHP: int
 
-
 class Attacker(Player):
     def __init__(self, id_player, name, gold, baseHP):
-        super().__init__(id_player, name, "Attacker", gold, baseHP) # Appel du constructeur de la classe parente
-        self.waves: List[Wave] = []  # 1..n waves
+        super().__init__(id_player, name, "Attacker", gold, baseHP)
+        self.waves: List[Wave] = []
 
     def composeVague(self) -> Wave:
         wave = Wave()
@@ -27,17 +25,18 @@ class Attacker(Player):
     def launchWave(self, wave: Wave):
         pass
 
-
 class Defender(Player):
     def __init__(self, id_player, name, gold, baseHP):
-        super().__init__(id_player, name, "Defender", gold, baseHP) 
-        self.towers: List[Tower] = []  # 1..n towers
+        super().__init__(id_player, name, "Defender", gold, baseHP)
+        self.towers: List[Tower] = []
 
     def placeTower(self, tower: Tower, cell: Cell):
-        if not cell.occupied: # Vérifier que la cellule n'est pas déjà occupée
+        if not cell.occupied:
             cell.tower = tower
             cell.occupied = True
-            self.towers.append(tower) # Ajouter la tour à la liste des tours du défenseur
+            self.towers.append(tower)
 
     def upgradeTower(self, tower: Tower):
-        tower.level += 1 # Amélioration simple : augmenter le niveau de la tour
+        if tower.level < 3:
+            tower.level += 1
+            tower.upgrade()
