@@ -2,6 +2,7 @@ import pygame
 import sys
 import math
 import random
+import os
 from game.board import GameBoard
 from game.players import Attacker, Defender
 from game.turnPlayer import TurnPlayer
@@ -17,12 +18,19 @@ class TowerDefenseGame:
         pygame.init()
         pygame.mixer.init()
 
+        window_icon_path = os.path.join(os.path.dirname(__file__), "assets", "creatures", "creature_normal.png")
+        try:
+            window_icon = pygame.image.load(window_icon_path)
+            pygame.display.set_icon(window_icon)
+        except Exception as e:
+            print(f"Impossible de charger l'icone de fenetre: {e}")
+
         self.jingle_sound = pygame.mixer.Sound("assets/musics/jingles.ogg")
         self.jingle_sound.set_volume(0.7)
         self.jingle_played = False
 
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-        pygame.display.set_caption("Tower Defense")
+        pygame.display.set_caption("Legends Strikes")
 
         self.menu_background = pygame.image.load("assets/ui/background_acceuil.png").convert()
         self.menu_background = pygame.transform.scale(
